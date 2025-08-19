@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EduRank - Advanced learning website comparison engine using MCDM and Elo rating algorithms. Perfect for evaluating student coding projects and educational websites.">
+    <meta name="keywords" content="website ranking, educational tools, student evaluation, coding projects, MCDM algorithm, Elo rating">
+    <meta name="author" content="Engr. R.M.Denaga">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="EduRank - Learning Website Comparison Engine">
+    <meta property="og:description" content="Advanced website ranking system for educational evaluation using mathematical algorithms">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/your-username/edurank">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="EduRank - Learning Website Comparison Engine">
+    <meta name="twitter:description" content="Advanced website ranking system for educational evaluation">
+    <title>EduRank - Learning Website Comparison Engine</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiRWR1UmFuayIsInNob3J0X25hbWUiOiJFZHVSYW5rIiwic3RhcnRfdXJsIjoiLyIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMxZTI5M2IiLCJ0aGVtZV9jb2xvciI6IiMzYjgyZjYifQ==">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .progress-bar { transition: width 0.8s ease-in-out; }
+        .pulse-animation { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-6 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                        <span class="text-2xl">📊</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">EduRank</h1>
+                        <p class="text-blue-100 text-sm">Learning Website Comparison Engine</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-blue-100">Algorithm: MCDM + Elo Rating</div>
+                    <div class="text-xs text-blue-200">Adaptive K-Factor | Dynamic Weights</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Settings Panel -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 card-hover">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">⚙️ Evaluation Settings</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Comparison Tightness</label>
+                    <select id="comparisonTightness" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="lenient">Lenient (For Beginners)</option>
+                        <option value="standard" selected>Standard (Balanced)</option>
+                        <option value="strict">Strict (Advanced Students)</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Adjusts scoring sensitivity for student skill level</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sort Rankings By</label>
+                    <select id="sortBy" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 mb-2">
+                        <option value="elo" selected>Elo Rating (Highest First)</option>
+                        <option value="composite">Composite Score (Highest First)</option>
+                        <option value="battles">Most Battles</option>
+                        <option value="winrate">Highest Win Rate</option>
+                        <option value="recent">Most Recently Added</option>
+                    </select>
+                    <select id="rankingFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="5">Top 5 Only</option>
+                        <option value="10">Top 10 Only</option>
+                        <option value="15">Top 15 Only</option>
+                        <option value="20">Top 20 Only</option>
+                        <option value="all" selected>Show All</option>
+                    </select>
+                </div>
+                <div class="flex items-end space-x-2">
+                    <button id="exportReport" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                        📄 Export Report
+                    </button>
+                    <button id="clearRankings" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                        🗑️ Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Champion -->
+        <div id="championSection" class="mb-8 hidden">
+            <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl p-6 text-white shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold mb-2">🏆 Current Champion</h2>
+                        <h3 id="championName" class="text-2xl font-bold"></h3>
+                        <p id="championScore" class="text-yellow-100"></p>
+                    </div>
+                    <div class="text-right">
+                        <div id="championRating" class="text-3xl font-bold"></div>
+                        <div class="text-yellow-100 text-sm">Elo Rating</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Website Form -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 card-hover">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Add Learning Website for Comparison</h2>
+            
+            <form id="websiteForm" class="space-y-4">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Website/Project Name</label>
+                        <input type="text" id="websiteName" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="e.g., Student Portfolio Site">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Input Method</label>
+                        <div class="flex space-x-4 mb-3">
+                            <label class="flex items-center">
+                                <input type="radio" name="inputMethod" value="url" checked 
+                                       class="mr-2 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm">Website URL</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="inputMethod" value="file" 
+                                       class="mr-2 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm">Upload HTML File</span>
+                            </label>
+                        </div>
+                        
+                        <!-- URL Input -->
+                        <div id="urlInput">
+                            <input type="url" id="websiteUrl" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="https://example.com">
+                        </div>
+                        
+                        <!-- File Upload -->
+                        <div id="fileInput" class="hidden">
+                            <div class="relative">
+                                <input type="file" id="htmlFile" accept=".html,.htm" 
+                                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                                    <div class="flex flex-col items-center">
+                                        <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                        </svg>
+                                        <span class="text-sm text-gray-600">Click to upload HTML file</span>
+                                        <span class="text-xs text-gray-400 mt-1">Supports .html and .htm files</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="fileInfo" class="hidden mt-2 p-2 bg-blue-50 rounded text-sm text-blue-800"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scoring Weight Control -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">📊 Scoring Weight Distribution</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">User Manual Grade Weight</label>
+                            <input type="range" id="userWeight" min="0" max="100" value="60" 
+                                   class="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="text-center text-sm text-gray-600 mt-1">
+                                <span id="userWeightValue">60</span>% User Grade
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">App Auto-Score Weight</label>
+                            <div class="w-full h-2 bg-green-200 rounded-lg mt-6">
+                                <div id="appWeightBar" class="bg-green-600 h-2 rounded-lg transition-all duration-300" style="width: 40%"></div>
+                            </div>
+                            <div class="text-center text-sm text-gray-600 mt-1">
+                                <span id="appWeightValue">40</span>% Auto Score
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Adjust how much your manual evaluation vs. automated scoring affects the final ranking</p>
+                </div>
+
+                <!-- Manual Grading Section -->
+                <div class="bg-yellow-50 rounded-lg p-4 mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">👨‍🏫 Manual Grade (Your Evaluation)</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Overall Grade (0-100)</label>
+                            <input type="range" id="manualGrade" min="0" max="100" value="75" 
+                                   class="w-full h-3 bg-yellow-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="text-center text-sm text-gray-600 mt-1">
+                                Grade: <span id="manualGradeValue" class="font-bold text-lg">75</span>/100
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Grading Notes (Optional)</label>
+                            <textarea id="gradingNotes" rows="2" 
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                      placeholder="e.g., Good design but needs better navigation..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Automated Scoring Section -->
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">🤖 Automated Scoring (App Evaluation)</h3>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">User-Friendliness (1-10)</label>
+                            <input type="range" id="userFriendliness" min="1" max="10" value="5" 
+                                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="text-center text-sm text-gray-600 mt-1">
+                                Score: <span id="userFriendlinessValue">5</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">User Engagement (1-10)</label>
+                            <input type="range" id="userEngagement" min="1" max="10" value="5" 
+                                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="text-center text-sm text-gray-600 mt-1">
+                                Score: <span id="userEngagementValue">5</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Loading Time (1-10)</label>
+                            <input type="range" id="loadingTime" min="1" max="10" value="5" 
+                                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="text-center text-sm text-gray-600 mt-1">
+                                Score: <span id="loadingTimeValue">5</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Code Quality (1-10)</label>
+                            <input type="range" id="mathAccuracy" min="1" max="10" value="5" 
+                                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="text-center text-sm text-gray-600 mt-1">
+                                Score: <span id="mathAccuracyValue">5</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 p-2 bg-blue-100 rounded text-sm">
+                        <span class="font-medium">Auto Score Preview:</span> 
+                        <span id="autoScorePreview">5.0/10</span>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitButton"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span id="submitText">Add Website & Calculate Ranking</span>
+                    <span id="submitLoader" class="hidden">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Processing...
+                    </span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Comparison Results -->
+        <div id="comparisonResults" class="hidden bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">🔄 Comparison Results</h2>
+            <div id="comparisonContent"></div>
+        </div>
+
+        <!-- Rankings Table -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-800">📈 Website Rankings</h2>
+                <div class="text-right">
+                    <div class="text-sm text-gray-600">
+                        Showing: <span id="rankingCount">0</span> websites
+                    </div>
+                    <div id="sortIndicator" class="text-xs text-blue-600 font-medium">
+                        Sorted by: Elo Rating
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="text-left py-3 px-4 font-medium text-gray-700">Rank</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-700">Website</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-700">Elo Rating</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-700">Composite Score</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-700">Battles</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankingsTable">
+                        <tr>
+                            <td colspan="5" class="text-center py-8 text-gray-500">
+                                No websites added yet. Add your first website above!
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Algorithm Explanation -->
+        <div class="bg-blue-50 rounded-xl p-6 mt-8">
+            <h3 class="text-lg font-bold text-blue-900 mb-3">🧮 Mathematical Algorithm Explained</h3>
+            <div class="grid md:grid-cols-2 gap-6 text-sm text-blue-800">
+                <div>
+                    <h4 class="font-semibold mb-2">1. Weighted Composite Score (MCDM)</h4>
+                    <p class="mb-2">Score = Σ(weight_i × criterion_i)</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>User-Friendliness: 25%</li>
+                        <li>User Engagement: 30%</li>
+                        <li>Loading Time: 20%</li>
+                        <li>Code Quality: 25%</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-2">2. Adaptive Elo Rating System</h4>
+                    <p class="mb-2">R' = R + K × (S - E)</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Lenient K-Factor: 20 (gentle evaluation)</li>
+                        <li>Standard K-Factor: 32 (balanced)</li>
+                        <li>Strict K-Factor: 48 (high sensitivity)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-sm">
+                Vibe Coded by <span class="font-semibold text-blue-400">Engr. R.M.Denaga</span> 
+                for <span class="font-semibold text-green-400">ALLSHS</span> 
+                on <span class="font-semibold">August 2025</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Website ranking system with mathematical algorithms
+        class EduRankSystem {
+            constructor() {
+                this.websites = JSON.parse(localStorage.getItem('edurank_websites') || '[]');
+                this.weights = {
+                    userFriendliness: 0.25,
+                    userEngagement: 0.30,
+                    loadingTime: 0.20,
+                    mathAccuracy: 0.25
+                };
+                this.tightnessSettings = {
+                    lenient: { kFactor: 20, threshold: 0.3 },
+                    standard: { kFactor: 32, threshold: 0.5 },
+                    strict: { kFactor: 48, threshold: 0.7 }
+                };
+                this.initializeEventListeners();
+                this.updateAutoScorePreview();
+                this.updateDisplay();
+            }
+
+            initializeEventListeners() {
+                // Range input updates
+                ['userFriendliness', 'userEngagement', 'loadingTime', 'mathAccuracy'].forEach(id => {
+                    const slider = document.getElementById(id);
+                    const valueDisplay = document.getElementById(id + 'Value');
+                    slider.addEventListener('input', () => {
+                        valueDisplay.textContent = slider.value;
+                        this.updateAutoScorePreview();
+                    });
+                });
+
+                // Manual grade slider
+                const manualGradeSlider = document.getElementById('manualGrade');
+                const manualGradeValue = document.getElementById('manualGradeValue');
+                manualGradeSlider.addEventListener('input', () => {
+                    manualGradeValue.textContent = manualGradeSlider.value;
+                });
+
+                // Weight distribution slider
+                const userWeightSlider = document.getElementById('userWeight');
+                const userWeightValue = document.getElementById('userWeightValue');
+                const appWeightValue = document.getElementById('appWeightValue');
+                const appWeightBar = document.getElementById('appWeightBar');
+                
+                userWeightSlider.addEventListener('input', () => {
+                    const userWeight = parseInt(userWeightSlider.value);
+                    const appWeight = 100 - userWeight;
+                    
+                    userWeightValue.textContent = userWeight;
+                    appWeightValue.textContent = appWeight;
+                    appWeightBar.style.width = appWeight + '%';
+                });
+
+                // Settings changes
+                document.getElementById('comparisonTightness').addEventListener('change', () => {
+                    this.updateDisplay();
+                });
+
+                document.getElementById('rankingFilter').addEventListener('change', () => {
+                    this.updateDisplay();
+                });
+
+                document.getElementById('sortBy').addEventListener('change', () => {
+                    this.updateDisplay();
+                });
+
+                // Export report
+                document.getElementById('exportReport').addEventListener('click', () => {
+                    this.exportReport();
+                });
+
+                // Clear rankings
+                document.getElementById('clearRankings').addEventListener('click', () => {
+                    this.clearAllRankings();
+                });
+
+                // Input method switching
+                document.querySelectorAll('input[name="inputMethod"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        const urlInput = document.getElementById('urlInput');
+                        const fileInput = document.getElementById('fileInput');
+                        
+                        if (e.target.value === 'url') {
+                            urlInput.classList.remove('hidden');
+                            fileInput.classList.add('hidden');
+                            document.getElementById('websiteUrl').required = true;
+                            document.getElementById('htmlFile').required = false;
+                        } else {
+                            urlInput.classList.add('hidden');
+                            fileInput.classList.remove('hidden');
+                            document.getElementById('websiteUrl').required = false;
+                            document.getElementById('htmlFile').required = true;
+                        }
+                    });
+                });
+
+                // File upload handling
+                document.getElementById('htmlFile').addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    const fileInfo = document.getElementById('fileInfo');
+                    
+                    if (file) {
+                        fileInfo.innerHTML = `
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-medium">${file.name}</div>
+                                    <div class="text-xs text-blue-600">${(file.size / 1024).toFixed(1)} KB</div>
+                                </div>
+                                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                        `;
+                        fileInfo.classList.remove('hidden');
+                    } else {
+                        fileInfo.classList.add('hidden');
+                    }
+                });
+
+                // Form submission
+                document.getElementById('websiteForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addWebsite();
+                });
+            }
+
+            getCurrentKFactor() {
+                const tightness = document.getElementById('comparisonTightness').value;
+                return this.tightnessSettings[tightness].kFactor;
+            }
+
+            // Calculate automated composite score using MCDM
+            calculateCompositeScore(criteria) {
+                return (
+                    criteria.userFriendliness * this.weights.userFriendliness +
+                    criteria.userEngagement * this.weights.userEngagement +
+                    criteria.loadingTime * this.weights.loadingTime +
+                    criteria.mathAccuracy * this.weights.mathAccuracy
+                );
+            }
+
+            // Calculate final weighted score combining manual grade and auto score
+            calculateFinalScore(manualGrade, autoScore, userWeight) {
+                const userWeightDecimal = userWeight / 100;
+                const appWeightDecimal = (100 - userWeight) / 100;
+                
+                // Convert manual grade (0-100) to same scale as auto score (0-10)
+                const normalizedManualGrade = manualGrade / 10;
+                
+                return (normalizedManualGrade * userWeightDecimal) + (autoScore * appWeightDecimal);
+            }
+
+            // Update auto score preview
+            updateAutoScorePreview() {
+                const criteria = {
+                    userFriendliness: parseInt(document.getElementById('userFriendliness').value),
+                    userEngagement: parseInt(document.getElementById('userEngagement').value),
+                    loadingTime: parseInt(document.getElementById('loadingTime').value),
+                    mathAccuracy: parseInt(document.getElementById('mathAccuracy').value)
+                };
+                
+                const autoScore = this.calculateCompositeScore(criteria);
+                document.getElementById('autoScorePreview').textContent = autoScore.toFixed(1) + '/10';
+            }
+
+            // Elo rating calculation with adaptive K-factor
+            calculateEloRating(ratingA, ratingB, scoreA) {
+                const kFactor = this.getCurrentKFactor();
+                const expectedA = 1 / (1 + Math.pow(10, (ratingB - ratingA) / 400));
+                const newRatingA = ratingA + kFactor * (scoreA - expectedA);
+                const newRatingB = ratingB + kFactor * ((1 - scoreA) - (1 - expectedA));
+                return { newRatingA, newRatingB };
+            }
+
+            async addWebsite() {
+                this.setLoading(true);
+                try {
+                    const name = document.getElementById('websiteName').value.trim();
+                    if (!name) {
+                        this.showNotification('Please enter a website name.', 'error');
+                        return;
+                    }
+
+                    const inputMethod = document.querySelector('input[name="inputMethod"]:checked').value;
+                    
+                    let url = '';
+                    let htmlContent = '';
+                    
+                    if (inputMethod === 'url') {
+                        url = document.getElementById('websiteUrl').value.trim();
+                        if (!url) {
+                            this.showNotification('Please enter a valid URL.', 'error');
+                            return;
+                        }
+                    } else {
+                        const fileInput = document.getElementById('htmlFile');
+                        if (fileInput.files.length === 0) {
+                            this.showNotification('Please select an HTML file to upload.', 'error');
+                            return;
+                        }
+                        
+                        const file = fileInput.files[0];
+                        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                            this.showNotification('File size too large. Please select a file under 5MB.', 'error');
+                            return;
+                        }
+                        
+                        try {
+                            htmlContent = await this.readFileContent(file);
+                            url = `Local File: ${file.name}`;
+                        } catch (error) {
+                            this.showNotification('Error reading file. Please try again.', 'error');
+                            return;
+                        }
+                    }
+
+                const criteria = {
+                    userFriendliness: parseInt(document.getElementById('userFriendliness').value),
+                    userEngagement: parseInt(document.getElementById('userEngagement').value),
+                    loadingTime: parseInt(document.getElementById('loadingTime').value),
+                    mathAccuracy: parseInt(document.getElementById('mathAccuracy').value)
+                };
+
+                // Get manual grading data
+                const manualGrade = parseInt(document.getElementById('manualGrade').value);
+                const gradingNotes = document.getElementById('gradingNotes').value;
+                const userWeight = parseInt(document.getElementById('userWeight').value);
+
+                // Calculate scores
+                const autoScore = this.calculateCompositeScore(criteria);
+                const finalScore = this.calculateFinalScore(manualGrade, autoScore, userWeight);
+                
+                const newWebsite = {
+                    id: Date.now(),
+                    name,
+                    url,
+                    htmlContent: htmlContent || null,
+                    inputMethod,
+                    criteria,
+                    manualGrade,
+                    gradingNotes,
+                    userWeight,
+                    autoScore,
+                    compositeScore: finalScore, // This is now the weighted final score
+                    eloRating: 1200, // Starting Elo rating
+                    battles: 0,
+                    wins: 0,
+                    addedAt: new Date().toISOString(),
+                    tightnessLevel: document.getElementById('comparisonTightness').value
+                };
+
+                // Compare with all existing websites
+                if (this.websites.length > 0) {
+                    this.compareWithAllWebsites(newWebsite);
+                } else {
+                    // First website gets a high rating since no competition
+                    newWebsite.eloRating = 1400; // Higher starting rating for first website
+                    this.websites.push(newWebsite);
+                    this.showFirstWebsiteMessage(newWebsite);
+                }
+
+                this.saveData();
+                this.updateDisplay();
+                document.getElementById('websiteForm').reset();
+                this.resetSliders();
+                this.resetInputMethod();
+                this.showNotification('Website added successfully!', 'success');
+                } catch (error) {
+                    console.error('Error adding website:', error);
+                    this.showNotification('An unexpected error occurred. Please try again.', 'error');
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            setLoading(isLoading) {
+                const submitButton = document.getElementById('submitButton');
+                const submitText = document.getElementById('submitText');
+                const submitLoader = document.getElementById('submitLoader');
+                
+                if (isLoading) {
+                    submitButton.disabled = true;
+                    submitText.classList.add('hidden');
+                    submitLoader.classList.remove('hidden');
+                } else {
+                    submitButton.disabled = false;
+                    submitText.classList.remove('hidden');
+                    submitLoader.classList.add('hidden');
+                }
+            }
+
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                const bgColor = type === 'success' ? 'bg-green-500' : 
+                               type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+                
+                notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+                notification.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+                        <span>${message}</span>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Animate in
+                setTimeout(() => {
+                    notification.classList.remove('translate-x-full');
+                }, 100);
+                
+                // Animate out and remove
+                setTimeout(() => {
+                    notification.classList.add('translate-x-full');
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+
+            readFileContent(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = (e) => reject(e);
+                    reader.readAsText(file);
+                });
+            }
+
+            compareWithAllWebsites(newWebsite) {
+                let totalWins = 0;
+                let comparisonResults = [];
+
+                // Compare new website with each existing website
+                this.websites.forEach(existingWebsite => {
+                    // Determine winner based on composite scores
+                    const newWins = newWebsite.compositeScore > existingWebsite.compositeScore;
+                    const scoreA = newWins ? 1 : 0;
+
+                    // Update Elo ratings
+                    const { newRatingA, newRatingB } = this.calculateEloRating(
+                        newWebsite.eloRating, 
+                        existingWebsite.eloRating, 
+                        scoreA
+                    );
+
+                    newWebsite.eloRating = Math.round(newRatingA);
+                    existingWebsite.eloRating = Math.round(newRatingB);
+
+                    // Update battle statistics
+                    newWebsite.battles++;
+                    existingWebsite.battles++;
+                    
+                    if (newWins) {
+                        newWebsite.wins++;
+                        totalWins++;
+                    } else {
+                        existingWebsite.wins++;
+                    }
+
+                    // Store comparison result
+                    comparisonResults.push({
+                        opponent: existingWebsite,
+                        newWins: newWins,
+                        newScore: newWebsite.compositeScore,
+                        opponentScore: existingWebsite.compositeScore
+                    });
+                });
+
+                this.websites.push(newWebsite);
+
+                // Show comprehensive comparison results
+                this.showAllComparisonResults(newWebsite, comparisonResults, totalWins);
+            }
+
+            showFirstWebsiteMessage(website) {
+                const resultsDiv = document.getElementById('comparisonResults');
+                const contentDiv = document.getElementById('comparisonContent');
+                
+                contentDiv.innerHTML = `
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg p-6">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <span class="text-3xl">🎉</span>
+                            <h3 class="text-xl font-bold">First Website Added!</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <p class="text-blue-100">
+                                <strong>${website.name}</strong> is now the champion by default since it's the first website in the system.
+                            </p>
+                            <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <div class="font-semibold">Starting Elo Rating:</div>
+                                        <div class="text-2xl font-bold">${website.eloRating}</div>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold">Composite Score:</div>
+                                        <div class="text-2xl font-bold">${website.compositeScore.toFixed(2)}/10</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-blue-100 text-sm">
+                                💡 Add more websites to see competitive rankings and mathematical comparisons!
+                            </p>
+                        </div>
+                    </div>
+                `;
+
+                resultsDiv.classList.remove('hidden');
+                resultsDiv.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            showAllComparisonResults(newWebsite, comparisonResults, totalWins) {
+                const resultsDiv = document.getElementById('comparisonResults');
+                const contentDiv = document.getElementById('comparisonContent');
+                
+                const tightness = document.getElementById('comparisonTightness').value;
+                const kFactor = this.getCurrentKFactor();
+                const totalBattles = comparisonResults.length;
+                const winRate = ((totalWins / totalBattles) * 100).toFixed(1);
+
+                // Create header with overall performance
+                let headerHTML = `
+                    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg p-6 mb-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">${newWebsite.name} vs All Existing Websites</h3>
+                                <p class="text-indigo-100">Battled against ${totalBattles} website${totalBattles > 1 ? 's' : ''}</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-3xl font-bold">${totalWins}/${totalBattles}</div>
+                                <div class="text-indigo-200 text-sm">Wins (${winRate}%)</div>
+                                <div class="text-lg font-semibold mt-2">Elo: ${newWebsite.eloRating}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Create individual battle results
+                let battlesHTML = `
+                    <div class="space-y-4">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Individual Battle Results:</h4>
+                `;
+
+                comparisonResults.forEach((result, index) => {
+                    const battleNumber = index + 1;
+                    battlesHTML += `
+                        <div class="grid md:grid-cols-2 gap-4 p-4 border rounded-lg ${result.newWins ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <h5 class="font-semibold">Battle ${battleNumber}: ${newWebsite.name}</h5>
+                                    ${result.newWins ? '<span class="text-green-600 font-bold text-sm">🏆 WON</span>' : '<span class="text-red-600 font-bold text-sm">❌ LOST</span>'}
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    Score: <span class="font-semibold">${result.newScore.toFixed(2)}/10</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <h5 class="font-semibold">${result.opponent.name}</h5>
+                                    ${!result.newWins ? '<span class="text-green-600 font-bold text-sm">🏆 WON</span>' : '<span class="text-red-600 font-bold text-sm">❌ LOST</span>'}
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    Score: <span class="font-semibold">${result.opponentScore.toFixed(2)}/10</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                battlesHTML += `</div>`;
+
+                // Mathematical analysis
+                const analysisHTML = `
+                    <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                        <h4 class="font-semibold text-blue-900 mb-3">📊 Mathematical Analysis (${tightness.toUpperCase()} Mode):</h4>
+                        <div class="grid md:grid-cols-2 gap-4 text-sm text-blue-800">
+                            <div>
+                                <div class="font-medium mb-2">Battle Statistics:</div>
+                                <ul class="space-y-1">
+                                    <li>• Total Battles: ${totalBattles}</li>
+                                    <li>• Victories: ${totalWins}</li>
+                                    <li>• Win Rate: ${winRate}%</li>
+                                    <li>• K-Factor Used: ${kFactor}</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <div class="font-medium mb-2">Scoring Method:</div>
+                                <ul class="space-y-1">
+                                    <li>• Manual Grade: ${newWebsite.userWeight}% weight</li>
+                                    <li>• Auto Score: ${100-newWebsite.userWeight}% weight</li>
+                                    <li>• Final Score: ${newWebsite.compositeScore.toFixed(2)}/10</li>
+                                    <li>• Final Elo Rating: ${newWebsite.eloRating}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-3 bg-blue-100 rounded text-xs text-blue-700">
+                            <strong>Algorithm:</strong> Each new website battles ALL existing websites individually. 
+                            Elo ratings are updated after each battle using the formula: R' = R + K × (S - E), 
+                            where S is the actual score (1 for win, 0 for loss) and E is the expected probability.
+                        </div>
+                    </div>
+                `;
+
+                contentDiv.innerHTML = headerHTML + battlesHTML + analysisHTML;
+                resultsDiv.classList.remove('hidden');
+                resultsDiv.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            updateDisplay() {
+                this.updateChampion();
+                this.updateRankingsTable();
+            }
+
+            updateChampion() {
+                const championSection = document.getElementById('championSection');
+                
+                if (this.websites.length === 0) {
+                    championSection.classList.add('hidden');
+                    return;
+                }
+
+                const champion = this.websites.reduce((prev, current) => 
+                    (prev.eloRating > current.eloRating) ? prev : current
+                );
+
+                document.getElementById('championName').textContent = champion.name;
+                document.getElementById('championScore').textContent = 
+                    `Composite Score: ${champion.compositeScore.toFixed(2)} | Win Rate: ${((champion.wins / Math.max(champion.battles, 1)) * 100).toFixed(1)}%`;
+                document.getElementById('championRating').textContent = champion.eloRating;
+
+                championSection.classList.remove('hidden');
+            }
+
+            updateRankingsTable() {
+                const tbody = document.getElementById('rankingsTable');
+                const rankingCount = document.getElementById('rankingCount');
+                
+                if (this.websites.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center py-8 text-gray-500">
+                                No websites added yet. Add your first website above!
+                            </td>
+                        </tr>
+                    `;
+                    rankingCount.textContent = '0';
+                    return;
+                }
+
+                // Get sort method
+                const sortBy = document.getElementById('sortBy').value;
+                let sortedWebsites = [...this.websites];
+
+                // Apply sorting based on selected criteria
+                switch (sortBy) {
+                    case 'elo':
+                        sortedWebsites.sort((a, b) => b.eloRating - a.eloRating);
+                        break;
+                    case 'composite':
+                        sortedWebsites.sort((a, b) => b.compositeScore - a.compositeScore);
+                        break;
+                    case 'battles':
+                        sortedWebsites.sort((a, b) => b.battles - a.battles);
+                        break;
+                    case 'winrate':
+                        sortedWebsites.sort((a, b) => {
+                            const winRateA = a.battles > 0 ? (a.wins / a.battles) : 0;
+                            const winRateB = b.battles > 0 ? (b.wins / b.battles) : 0;
+                            return winRateB - winRateA;
+                        });
+                        break;
+                    case 'recent':
+                        sortedWebsites.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt));
+                        break;
+                    default:
+                        sortedWebsites.sort((a, b) => b.eloRating - a.eloRating);
+                }
+                
+                // Apply ranking filter
+                const filter = document.getElementById('rankingFilter').value;
+                if (filter !== 'all') {
+                    sortedWebsites = sortedWebsites.slice(0, parseInt(filter));
+                }
+
+                rankingCount.textContent = sortedWebsites.length;
+
+                // Update sort indicator
+                const sortIndicator = document.getElementById('sortIndicator');
+                const sortLabels = {
+                    'elo': 'Elo Rating',
+                    'composite': 'Composite Score', 
+                    'battles': 'Most Battles',
+                    'winrate': 'Win Rate',
+                    'recent': 'Recently Added'
+                };
+                sortIndicator.textContent = `Sorted by: ${sortLabels[sortBy]}`;
+
+                tbody.innerHTML = sortedWebsites.map((website, index) => `
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3 px-4">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full ${
+                                index === 0 ? 'bg-yellow-100 text-yellow-800' : 
+                                index === 1 ? 'bg-gray-100 text-gray-800' : 
+                                index === 2 ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
+                            } font-bold text-sm">
+                                ${index + 1}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div>
+                                <div class="font-medium text-gray-900">${website.name}</div>
+                                <div class="text-sm text-gray-500 flex items-center space-x-2">
+                                    <span>${website.url}</span>
+                                    ${website.inputMethod === 'file' ? 
+                                        `<button onclick="eduRank.previewFile(${website.id})" 
+                                                class="text-blue-600 hover:text-blue-800 text-xs underline">
+                                            Preview HTML
+                                        </button>` : 
+                                        `<a href="${website.url}" target="_blank" 
+                                           class="text-blue-600 hover:text-blue-800 text-xs underline">
+                                            Visit Site
+                                        </a>`
+                                    }
+                                </div>
+                                ${website.gradingNotes ? `<div class="text-xs text-gray-400 mt-1 italic">"${website.gradingNotes}"</div>` : ''}
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="text-lg font-bold text-gray-900">${website.eloRating}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-16 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full progress-bar" 
+                                         style="width: ${(website.compositeScore / 10) * 100}%"></div>
+                                </div>
+                                <span class="text-sm font-medium">${website.compositeScore.toFixed(2)}/10</span>
+                            </div>
+                            ${website.manualGrade !== undefined ? `
+                            <div class="text-xs text-gray-500 mt-1">
+                                Manual: ${website.manualGrade}/100 (${website.userWeight}%)<br>
+                                Auto: ${website.autoScore.toFixed(1)}/10 (${100-website.userWeight}%)
+                            </div>` : ''}
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="text-sm">
+                                <div>${website.battles} battles</div>
+                                <div class="text-gray-500">${website.battles > 0 ? ((website.wins / website.battles) * 100).toFixed(1) : 0}% win rate</div>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            exportReport() {
+                if (this.websites.length === 0) {
+                    alert('No websites to export. Please add some websites first.');
+                    return;
+                }
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Header
+                doc.setFontSize(20);
+                doc.text('EduRank Comprehensive Report', 20, 20);
+                
+                doc.setFontSize(12);
+                doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
+                doc.text(`Total Websites Evaluated: ${this.websites.length}`, 20, 40);
+                
+                const tightness = document.getElementById('comparisonTightness').value;
+                doc.text(`Comparison Tightness: ${tightness.toUpperCase()}`, 20, 50);
+                
+                // Rankings
+                doc.setFontSize(16);
+                doc.text('Website Rankings', 20, 70);
+                
+                const sortedWebsites = [...this.websites].sort((a, b) => b.eloRating - a.eloRating);
+                
+                let yPos = 85;
+                sortedWebsites.forEach((website, index) => {
+                    if (yPos > 250) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    doc.setFontSize(12);
+                    doc.text(`${index + 1}. ${website.name}`, 20, yPos);
+                    doc.setFontSize(10);
+                    doc.text(`   Elo Rating: ${website.eloRating} | Composite Score: ${website.compositeScore.toFixed(2)}`, 20, yPos + 8);
+                    doc.text(`   Battles: ${website.battles} | Win Rate: ${website.battles > 0 ? ((website.wins / website.battles) * 100).toFixed(1) : 0}%`, 20, yPos + 16);
+                    doc.text(`   URL: ${website.url}`, 20, yPos + 24);
+                    
+                    yPos += 35;
+                });
+                
+                // Detailed Analysis
+                doc.addPage();
+                doc.setFontSize(16);
+                doc.text('Detailed Mathematical Analysis', 20, 20);
+                
+                yPos = 35;
+                doc.setFontSize(12);
+                doc.text('Algorithm Components:', 20, yPos);
+                yPos += 15;
+                
+                doc.setFontSize(10);
+                doc.text('1. Multi-Criteria Decision Analysis (MCDM)', 20, yPos);
+                yPos += 8;
+                doc.text('   - User-Friendliness: 25%', 25, yPos);
+                yPos += 8;
+                doc.text('   - User Engagement: 30%', 25, yPos);
+                yPos += 8;
+                doc.text('   - Loading Time: 20%', 25, yPos);
+                yPos += 8;
+                doc.text('   - Code Quality: 25%', 25, yPos);
+                yPos += 15;
+                
+                doc.text('2. Adaptive Elo Rating System', 20, yPos);
+                yPos += 8;
+                doc.text(`   - K-Factor: ${this.getCurrentKFactor()} (${tightness} mode)`, 25, yPos);
+                yPos += 8;
+                doc.text('   - Formula: R\' = R + K × (S - E)', 25, yPos);
+                yPos += 15;
+                
+                // Individual Website Details
+                doc.text('Individual Website Breakdown:', 20, yPos);
+                yPos += 15;
+                
+                sortedWebsites.forEach((website, index) => {
+                    if (yPos > 220) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    doc.setFontSize(11);
+                    doc.text(`${index + 1}. ${website.name}`, 20, yPos);
+                    yPos += 10;
+                    
+                    doc.setFontSize(9);
+                    if (website.manualGrade !== undefined) {
+                        doc.text(`Manual Grade: ${website.manualGrade}/100 (Weight: ${website.userWeight}%)`, 25, yPos);
+                        yPos += 8;
+                        doc.text(`Auto Score: ${website.autoScore.toFixed(2)}/10 (Weight: ${100-website.userWeight}%)`, 25, yPos);
+                        yPos += 8;
+                        doc.text(`Final Weighted Score: ${website.compositeScore.toFixed(2)}/10`, 25, yPos);
+                        yPos += 8;
+                        if (website.gradingNotes) {
+                            doc.text(`Notes: ${website.gradingNotes}`, 25, yPos);
+                            yPos += 8;
+                        }
+                    }
+                    doc.text(`User-Friendliness: ${website.criteria.userFriendliness}/10`, 25, yPos);
+                    doc.text(`User Engagement: ${website.criteria.userEngagement}/10`, 100, yPos);
+                    yPos += 8;
+                    doc.text(`Loading Time: ${website.criteria.loadingTime}/10`, 25, yPos);
+                    doc.text(`Code Quality: ${website.criteria.mathAccuracy}/10`, 100, yPos);
+                    yPos += 8;
+                    doc.text(`Added: ${new Date(website.addedAt).toLocaleDateString()}`, 25, yPos);
+                    yPos += 15;
+                });
+                
+                // Footer
+                doc.setFontSize(8);
+                doc.text('Vibe Coded by Engr. R.M.Denaga for ALLSHS on August 2025', 20, 280);
+                
+                // Save the PDF
+                doc.save(`EduRank_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+            }
+
+            resetSliders() {
+                ['userFriendliness', 'userEngagement', 'loadingTime', 'mathAccuracy'].forEach(id => {
+                    document.getElementById(id).value = 5;
+                    document.getElementById(id + 'Value').textContent = 5;
+                });
+            }
+
+            resetInputMethod() {
+                // Reset to URL input method
+                document.querySelector('input[name="inputMethod"][value="url"]').checked = true;
+                document.getElementById('urlInput').classList.remove('hidden');
+                document.getElementById('fileInput').classList.add('hidden');
+                document.getElementById('websiteUrl').required = true;
+                document.getElementById('htmlFile').required = false;
+                document.getElementById('fileInfo').classList.add('hidden');
+            }
+
+            previewFile(websiteId) {
+                const website = this.websites.find(w => w.id === websiteId);
+                if (!website || !website.htmlContent) {
+                    alert('HTML content not available for preview.');
+                    return;
+                }
+
+                // Create a new window to display the HTML content
+                const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+                previewWindow.document.write(website.htmlContent);
+                previewWindow.document.close();
+                previewWindow.document.title = `Preview: ${website.name}`;
+            }
+
+            clearAllRankings() {
+                if (this.websites.length === 0) {
+                    this.showNotification('No rankings to clear.', 'info');
+                    return;
+                }
+
+                const confirmed = confirm(
+                    `Are you sure you want to clear all ${this.websites.length} website rankings? This action cannot be undone.`
+                );
+
+                if (confirmed) {
+                    this.websites = [];
+                    this.saveData();
+                    this.updateDisplay();
+                    
+                    // Hide comparison results if visible
+                    document.getElementById('comparisonResults').classList.add('hidden');
+                    
+                    this.showNotification('All rankings cleared successfully!', 'success');
+                }
+            }
+
+            saveData() {
+                localStorage.setItem('edurank_websites', JSON.stringify(this.websites));
+            }
+        }
+
+        // Initialize the system
+        const eduRank = new EduRankSystem();
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCJpbnN0YWxsIiwgZnVuY3Rpb24oZXZlbnQpIHsgZXZlbnQud2FpdFVudGlsKHNlbGYuc2tpcFdhaXRpbmcoKSk7IH0pOw==');
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9719b460c48102c6',t:'MTc1NTYwNzA3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
